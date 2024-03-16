@@ -1,0 +1,65 @@
+
+{{ define "entx_tx" }}
+{{ $pkg := base $.Config.Package }}
+{{ template "header" $ }}
+
+type EntxTxOwnershipContextKey string
+
+var EntxTxOwnershipKey EntxTxOwnershipContextKey = "entx_tx_ownership"
+
+type EntxTxOwnership struct {}
+
+func EntxTxTagContext(ctx context.Context) context.Context {
+	value := ctx.Value(EntxTxOwnershipKey)
+	if value != nil {
+		return ctx
+	}
+
+	return context.WithValue(ctx, EntxTxOwnershipKey, &EntxTxOwnership{})
+}
+
+func (db *Client) Acquire(ctx context.Context) (*Tx, context.Context, error) {
+	tx := TxFromContext(ctx)
+	if tx == nil {
+		tx, err := db.Tx(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		return tx, NewTxContext(ctx, tx), nil
+	}
+
+	return tx, EntxTxTagContext(ctx), nil
+}
+
+func (tx *Tx) Release(ctx context.Context, err error) error {
+	value := ctx.Value(EntxTxOwnershipKey)
+	if value != nil {
+		if value.(*EntxTxOwnership) != nil {
+			// If we are a children, let's skip handling the transaction and forward the error
+			return err
+		}
+
+		return err
+	}
+
+	if err != nil {
+		// Rollback the transaction and forward the error
+		rerr := tx.Rollback()
+		if rerr != nil {
+			return rerr
+		}
+
+		return err
+	}
+
+	cerr := tx.Commit()
+	if cerr != nil {
+		return cerr
+	}
+
+	return nil
+}
+
+
+{{ end }}
+

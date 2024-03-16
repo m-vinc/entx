@@ -1,0 +1,42 @@
+{{ define "entx_queryable" }}
+{{ $pkg := base $.Config.Package }}
+{{ template "header" $ }}
+
+func (tx *Tx) Queryable(ctx context.Context) Queryable {
+	return &genericQueryable{ctx: ctx, tx: tx}
+}
+
+func (client *Client) Queryable(ctx context.Context) Queryable {
+	return &genericQueryable{ctx: ctx, database: client}
+}
+
+type genericQueryable struct {
+	ctx context.Context
+
+	tx       *Tx
+	database *Client
+}
+
+func (gq *genericQueryable) Context() context.Context {
+	return gq.ctx
+}
+
+{{/* Loop over all nodes and add the Greet method */}}
+{{ range $n := $.Nodes }}
+func (gq *genericQueryable) {{ $n.Name }}Client() *{{ $n.Name }}Client {
+	if gq.tx != nil {
+		return gq.tx.{{ $n.Name }}
+	}
+
+	return gq.database.{{ $n.Name }}
+}
+{{ end }}
+
+
+type Queryable interface {
+	Context() context.Context
+    {{ range $n := $.Nodes }}
+    {{ $n.Name }}Client() *{{ $n.Name }}Client
+    {{ end }}
+}
+{{ end }}

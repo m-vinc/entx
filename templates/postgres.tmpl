@@ -1,0 +1,40 @@
+{{ define "entx_psql" }}
+
+{{ $pkg := base $.Config.Package }}
+{{ template "header" $ }}
+
+import (
+    _ "github.com/lib/pq"
+)
+
+type PostgresConfiguration struct {
+	Host     string
+	Port     string
+	Database string
+	Username string
+	Password string
+
+	SSLMode string
+}
+
+func Postgres(cfg *PostgresConfiguration) (*Client, error) {
+	connstring := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=%s",
+		cfg.Host,
+		cfg.Port,
+		cfg.Database,
+		cfg.Username,
+		cfg.Password,
+		cfg.SSLMode,
+	)
+
+	// ent.Debug()
+	postgres, err := Open("postgres", connstring)
+	if err != nil {
+		return nil, err
+	}
+
+	return postgres, nil
+
+}
+
+{{ end }}
