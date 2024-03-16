@@ -39,7 +39,7 @@ func main() {
 
 ### Postgres
 
-Postgres generate only simple function when using a postgresql database.
+Postgres generate only simple function useful when using a postgresql database.
 
 ```go
 db, err := ent.Postgres(&ent.PostgresConfiguration{
