@@ -1,6 +1,6 @@
 # Entx
 
-Entx is my personal collection of useful snippet I use in any project involving using [Ent](https://entgo.io/). Currently only three feature is present.
+Entx is my personal collection of useful snippet I use in any project involving [Ent](https://entgo.io/). Currently only three feature is present.
 
 ## Usage
 
