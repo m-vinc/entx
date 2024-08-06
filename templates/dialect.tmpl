@@ -1,0 +1,11 @@
+{{ define "entx_dialect" }}
+
+{{ $pkg := base $.Config.Package }}
+{{ template "header" $ }}
+
+
+func (db *Client) Dialect() string {
+  return db.driver.Dialect()
+} 
+
+{{ end }}

@@ -26,7 +26,7 @@ func main() {
 	}, entc.Extensions(
         entviz.Extension{},
         entx.New(nil),
-        // entx.New(&entx.Options{Tx: true}),
+        // entx.New(&entx.Options{Tx: true, Dialect: true}),
     ))
 	if err != nil {
 		log.Fatalf("running ent codegen: %v", err)
@@ -36,6 +36,24 @@ func main() {
 ```
 
 ## Features
+
+### Dialect
+
+Define a single function on the ent client to expose the current dialect of the driver used. Useful if you want to use ForUpdate only while using a postgresql database.
+
+```go
+q := tx.Friendship.Query().
+	Where(friendship.IDEQ(p.Friendship.ID))
+
+if s.db.Dialect() == dialect.Postgres {
+	q.ForUpdate()
+}
+
+f, err := q.First(ctx)
+if err != nil {
+	return nil, tx.Release(ctx, err)
+}
+```
 
 ### Postgres
 
